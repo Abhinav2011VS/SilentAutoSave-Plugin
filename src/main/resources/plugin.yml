@@ -1,0 +1,7 @@
+name: SilentAutoSave
+version: '5.0'
+main: net.abhinav.silentautosave.SilentAutoSave
+api-version: '1.21'
+load: STARTUP
+authors: [ Abhinav VS ]
+description: A plugin that silently saves the world every second without showing any output.
