@@ -1,30 +1,17 @@
 package net.abhinav.silentautosave;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
-public class SilentAutoSave extends JavaPlugin implements Listener {
+public class SilentAutoSave extends JavaPlugin {
 
     private int saveInterval;
 
@@ -32,18 +19,8 @@ public class SilentAutoSave extends JavaPlugin implements Listener {
     public void onEnable() {
         saveDefaultConfig();
         loadConfig();
-        Bukkit.getPluginManager().registerEvents(this, this);
-
-        // Suppress console output
         suppressConsoleOutput();
-
-        // Auto Save and Backup
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                executeSaveAllSilently();
-            }
-        }.runTaskTimer(this, saveInterval * 20L, saveInterval * 20L);
+        startAutoSave();
     }
 
     private void loadConfig() {
@@ -52,7 +29,6 @@ public class SilentAutoSave extends JavaPlugin implements Listener {
 
     private void suppressConsoleOutput() {
         try {
-            // Redirect System.out to a dummy stream to suppress console output
             PrintStream dummyPrintStream = new PrintStream(Files.newOutputStream(Path.of("dummy.log"), StandardOpenOption.CREATE, StandardOpenOption.APPEND));
             System.setOut(dummyPrintStream);
         } catch (IOException e) {
@@ -60,13 +36,24 @@ public class SilentAutoSave extends JavaPlugin implements Listener {
         }
     }
 
+    private void startAutoSave() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                executeSaveAllSilently();
+            }
+        }.runTaskTimer(this, saveInterval * 20L, saveInterval * 20L);
+    }
+
     private void executeSaveAllSilently() {
         try {
-            // Use reflection to execute the save-all command silently
-            Class<?> craftServerClass = Class.forName("org.bukkit.craftbukkit.v1_21_R1.CraftServer");
-            Object craftServer = craftServerClass.cast(Bukkit.getServer());
-            Method saveMethod = craftServerClass.getMethod("savePlayers");
-            saveMethod.invoke(craftServer);
+            // Use reflection to execute the save-all flush command silently
+            Method saveAllMethod = Bukkit.getServer().getClass().getMethod("savePlayers");
+            saveAllMethod.invoke(Bukkit.getServer());
+
+            // Optionally, if you want to flush to disk, you may need to invoke the saveWorlds method or similar
+            Method flushMethod = Bukkit.getServer().getClass().getMethod("saveWorlds");
+            flushMethod.invoke(Bukkit.getServer());
         } catch (Exception e) {
             e.printStackTrace();
         }

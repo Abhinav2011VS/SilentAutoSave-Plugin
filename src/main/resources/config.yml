@@ -3,4 +3,6 @@
 # -------------------------
 # Auto Save Configuration
 # -------------------------
-save-interval: 60  # Interval (in seconds) for auto-saving the world
+
+# Interval (in seconds) for auto-saving the world
+save-interval: 60

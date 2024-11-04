@@ -1,5 +1,5 @@
 name: SilentAutoSave
-version: '5.0'
+version: '5.2'
 main: net.abhinav.silentautosave.SilentAutoSave
 api-version: '1.21'
 load: STARTUP
